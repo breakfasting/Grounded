@@ -84133,22 +84133,49 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var pixi_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! pixi.js */ "./node_modules/pixi.js/lib/pixi.es.js");
 /* harmony import */ var pako__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! pako */ "./node_modules/pako/index.js");
 /* harmony import */ var pako__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(pako__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! d3 */ "./node_modules/d3/index.js");
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
 
 
-var Airports = function Airports() {
-  _classCallCheck(this, Airports);
 
-  this.loader = pixi_js__WEBPACK_IMPORTED_MODULE_0__["Loader"].shared;
-  this.list = pako__WEBPACK_IMPORTED_MODULE_1__["ungzip"](this.loader.resources.airports.data, {
-    to: 'string'
-  }); // debugger
-} // unzip(data) {
-//   this.loader.resources.data
-// }
-;
+
+var Airports = /*#__PURE__*/function () {
+  function Airports() {
+    _classCallCheck(this, Airports);
+
+    this.loader = pixi_js__WEBPACK_IMPORTED_MODULE_0__["Loader"].shared;
+    var text = pako__WEBPACK_IMPORTED_MODULE_1__["ungzip"](this.loader.resources.airports.data, {
+      to: 'string'
+    });
+    this.list = d3__WEBPACK_IMPORTED_MODULE_2__["csvParse"](text);
+    console.log(this.list); // debugger
+  }
+
+  _createClass(Airports, [{
+    key: "draw",
+    value: function draw(app, projection) {
+      var graphics = new pixi_js__WEBPACK_IMPORTED_MODULE_0__["Graphics"]();
+      graphics.lineStyle();
+      graphics.beginFill(0xA45341, 1);
+      var markerWidth = 4; // debugger;
+
+      this.list.forEach(function (airport) {
+        var p = projection([airport.lon, airport.lat]);
+        var x = p[0] - markerWidth / 2;
+        var y = p[1] - markerWidth / 2;
+        graphics.drawRect(x, y, markerWidth, markerWidth);
+      });
+      app.stage.addChild(graphics);
+    }
+  }]);
+
+  return Airports;
+}();
 
 /* harmony default export */ __webpack_exports__["default"] = (Airports);
 
@@ -84190,9 +84217,9 @@ var Graph = /*#__PURE__*/function () {
     });
     this.loader = pixi_js__WEBPACK_IMPORTED_MODULE_0__["Loader"].shared;
     this.extent = [[0, 0], [window.innerWidth, window.innerHeight]];
-    this.graphics = new pixi_js__WEBPACK_IMPORTED_MODULE_0__["Graphics"](); // this.projection = d3.geoNaturalEarth1();
+    this.graphics = new pixi_js__WEBPACK_IMPORTED_MODULE_0__["Graphics"]();
+    this.projection = d3__WEBPACK_IMPORTED_MODULE_1__["geoNaturalEarth1"](); // this.projection = d3.geoOrthographic();
 
-    this.projection = d3__WEBPACK_IMPORTED_MODULE_1__["geoOrthographic"]();
     this.pathGenerator = d3__WEBPACK_IMPORTED_MODULE_1__["geoPath"]().projection(this.projection).context(this.graphics);
   }
 
@@ -84207,9 +84234,9 @@ var Graph = /*#__PURE__*/function () {
       this.loader.on('progress', function (loader) {
         console.log("".concat(loader.progress, "% loaded"));
       }).load(function () {
-        _this.airports = new _airports__WEBPACK_IMPORTED_MODULE_3__["default"]();
-
         _this.draw();
+
+        _this.airports = new _airports__WEBPACK_IMPORTED_MODULE_3__["default"]();
       });
     }
   }, {
@@ -84232,6 +84259,8 @@ var Graph = /*#__PURE__*/function () {
         _this2.graphics.endFill();
 
         _this2.app.stage.addChild(_this2.graphics);
+
+        _this2.airports.draw(_this2.app, _this2.projection);
       });
     }
   }]);

@@ -16,8 +16,8 @@ class Graph {
     this.extent = [[0, 0], [window.innerWidth, window.innerHeight]];
     this.graphics = new PIXI.Graphics();
 
-    // this.projection = d3.geoNaturalEarth1();
-    this.projection = d3.geoOrthographic();
+    this.projection = d3.geoNaturalEarth1();
+    // this.projection = d3.geoOrthographic();
     this.pathGenerator = d3.geoPath()
       .projection(this.projection)
       .context(this.graphics);
@@ -29,8 +29,8 @@ class Graph {
       console.log(`${loader.progress}% loaded`);
     })
       .load(() => {
-        this.airports = new Airports();
         this.draw();
+        this.airports = new Airports();
       });
   }
 
@@ -49,6 +49,7 @@ class Graph {
         this.graphics.endFill();
 
         this.app.stage.addChild(this.graphics);
+        this.airports.draw(this.app, this.projection);
       });
   }
 }
