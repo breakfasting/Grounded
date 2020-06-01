@@ -1,6 +1,7 @@
 import * as PIXI from 'pixi.js';
 import * as d3 from 'd3';
 import { feature } from 'topojson-client';
+import Airports from './airports';
 
 class Graph {
   constructor() {
@@ -10,19 +11,27 @@ class Graph {
       width: window.innerWidth,
       height: window.innerHeight,
     });
+    this.loader = PIXI.Loader.shared;
 
     this.extent = [[0, 0], [window.innerWidth, window.innerHeight]];
     this.graphics = new PIXI.Graphics();
 
-    this.projection = d3.geoNaturalEarth1();
+    // this.projection = d3.geoNaturalEarth1();
+    this.projection = d3.geoOrthographic();
     this.pathGenerator = d3.geoPath()
       .projection(this.projection)
       .context(this.graphics);
   }
 
   load() {
-    console.log('graph loading');
-    this.draw();
+    this.loader.add('airports', 'dist/assets/airports.csv.gz', { xhrType: 'arraybuffer' });
+    this.loader.on('progress', (loader) => {
+      console.log(`${loader.progress}% loaded`);
+    })
+      .load(() => {
+        this.airports = new Airports();
+        this.draw();
+      });
   }
 
   draw() {
@@ -30,6 +39,7 @@ class Graph {
       .then((data) => {
         this.countries = feature(data, data.objects.countries);
         console.log(this.countries);
+
 
         this.projection.fitExtent(this.extent, this.countries);
 
