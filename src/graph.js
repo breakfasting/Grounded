@@ -2,6 +2,7 @@ import * as PIXI from 'pixi.js';
 import * as d3 from 'd3';
 import { feature } from 'topojson-client';
 import Airports from './airports';
+import Routes from './routes';
 
 class Graph {
   constructor() {
@@ -25,12 +26,14 @@ class Graph {
 
   load() {
     this.loader.add('airports', 'dist/assets/airports.csv.gz', { xhrType: 'arraybuffer' });
+    this.loader.add('routes', 'dist/assets/routes.csv.gz', { xhrType: 'arraybuffer' });
     this.loader.on('progress', (loader) => {
       console.log(`${loader.progress}% loaded`);
     })
       .load(() => {
         this.draw();
         this.airports = new Airports();
+        this.routes = new Routes();
       });
   }
 

@@ -84194,11 +84194,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! d3 */ "./node_modules/d3/index.js");
 /* harmony import */ var topojson_client__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! topojson-client */ "./node_modules/topojson-client/src/index.js");
 /* harmony import */ var _airports__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./airports */ "./src/airports.js");
+/* harmony import */ var _routes__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./routes */ "./src/routes.js");
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
 
 
 
@@ -84231,12 +84233,16 @@ var Graph = /*#__PURE__*/function () {
       this.loader.add('airports', 'dist/assets/airports.csv.gz', {
         xhrType: 'arraybuffer'
       });
+      this.loader.add('routes', 'dist/assets/routes.csv.gz', {
+        xhrType: 'arraybuffer'
+      });
       this.loader.on('progress', function (loader) {
         console.log("".concat(loader.progress, "% loaded"));
       }).load(function () {
         _this.draw();
 
         _this.airports = new _airports__WEBPACK_IMPORTED_MODULE_3__["default"]();
+        _this.routes = new _routes__WEBPACK_IMPORTED_MODULE_4__["default"]();
       });
     }
   }, {
@@ -84288,6 +84294,66 @@ window.onload = function () {
   var graph = new _graph__WEBPACK_IMPORTED_MODULE_0__["default"]();
   graph.load();
 };
+
+/***/ }),
+
+/***/ "./src/routes.js":
+/*!***********************!*\
+  !*** ./src/routes.js ***!
+  \***********************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var pixi_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! pixi.js */ "./node_modules/pixi.js/lib/pixi.es.js");
+/* harmony import */ var pako__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! pako */ "./node_modules/pako/index.js");
+/* harmony import */ var pako__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(pako__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! d3 */ "./node_modules/d3/index.js");
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+
+
+
+
+var Routes = /*#__PURE__*/function () {
+  function Routes() {
+    _classCallCheck(this, Routes);
+
+    this.loader = pixi_js__WEBPACK_IMPORTED_MODULE_0__["Loader"].shared;
+    var text = pako__WEBPACK_IMPORTED_MODULE_1__["ungzip"](this.loader.resources.routes.data, {
+      to: 'string'
+    });
+    this.list = d3__WEBPACK_IMPORTED_MODULE_2__["csvParse"](text);
+    console.log(this.list); // debugger
+  }
+
+  _createClass(Routes, [{
+    key: "draw",
+    value: function draw(app, projection) {
+      var graphics = new pixi_js__WEBPACK_IMPORTED_MODULE_0__["Graphics"]();
+      graphics.lineStyle();
+      graphics.beginFill(0xA45341, 1);
+      var markerWidth = 4; // debugger;
+
+      this.list.forEach(function (airport) {
+        var p = projection([airport.lon, airport.lat]);
+        var x = p[0] - markerWidth / 2;
+        var y = p[1] - markerWidth / 2;
+        graphics.drawRect(x, y, markerWidth, markerWidth);
+      });
+      app.stage.addChild(graphics);
+    }
+  }]);
+
+  return Routes;
+}();
+
+/* harmony default export */ __webpack_exports__["default"] = (Routes);
 
 /***/ })
 
