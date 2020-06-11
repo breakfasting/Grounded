@@ -84134,6 +84134,16 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var pako__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! pako */ "./node_modules/pako/index.js");
 /* harmony import */ var pako__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(pako__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! d3 */ "./node_modules/d3/index.js");
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+function _objectWithoutProperties(source, excluded) { if (source == null) return {}; var target = _objectWithoutPropertiesLoose(source, excluded); var key, i; if (Object.getOwnPropertySymbols) { var sourceSymbolKeys = Object.getOwnPropertySymbols(source); for (i = 0; i < sourceSymbolKeys.length; i++) { key = sourceSymbolKeys[i]; if (excluded.indexOf(key) >= 0) continue; if (!Object.prototype.propertyIsEnumerable.call(source, key)) continue; target[key] = source[key]; } } return target; }
+
+function _objectWithoutPropertiesLoose(source, excluded) { if (source == null) return {}; var target = {}; var sourceKeys = Object.keys(source); var key, i; for (i = 0; i < sourceKeys.length; i++) { key = sourceKeys[i]; if (excluded.indexOf(key) >= 0) continue; target[key] = source[key]; } return target; }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
@@ -84152,11 +84162,29 @@ var Airports = /*#__PURE__*/function () {
     var text = pako__WEBPACK_IMPORTED_MODULE_1__["ungzip"](this.loader.resources.airports.data, {
       to: 'string'
     });
-    this.list = d3__WEBPACK_IMPORTED_MODULE_2__["csvParse"](text);
-    console.log(this.list); // debugger
-  }
+    this.list = this.processAirports(d3__WEBPACK_IMPORTED_MODULE_2__["csvParse"](text)); // console.log(this.list);
+    // debugger
+  } // eslint-disable-next-line class-methods-use-this
+
 
   _createClass(Airports, [{
+    key: "processAirports",
+    value: function processAirports(list) {
+      return list.map(function (_ref, i) {
+        var lat = _ref.lat,
+            lon = _ref.lon,
+            country = _ref.country,
+            data = _objectWithoutProperties(_ref, ["lat", "lon", "country"]);
+
+        return _objectSpread(_objectSpread({}, data), {}, {
+          index: i,
+          coords: [lat, lon].map(parseFloat),
+          country: country // continent:
+
+        });
+      });
+    }
+  }, {
     key: "draw",
     value: function draw(app, projection) {
       var graphics = new pixi_js__WEBPACK_IMPORTED_MODULE_0__["Graphics"]();
@@ -84165,7 +84193,7 @@ var Airports = /*#__PURE__*/function () {
       var markerWidth = 4; // debugger;
 
       this.list.forEach(function (airport) {
-        var p = projection([airport.lon, airport.lat]);
+        var p = projection([airport.coords[1], airport.coords[0]]);
         var x = p[0] - markerWidth / 2;
         var y = p[1] - markerWidth / 2;
         graphics.drawRect(x, y, markerWidth, markerWidth);
@@ -84242,7 +84270,7 @@ var Graph = /*#__PURE__*/function () {
         _this.draw();
 
         _this.airports = new _airports__WEBPACK_IMPORTED_MODULE_3__["default"]();
-        _this.routes = new _routes__WEBPACK_IMPORTED_MODULE_4__["default"]();
+        _this.routes = new _routes__WEBPACK_IMPORTED_MODULE_4__["default"](_this.airports.list);
       });
     }
   }, {
@@ -84251,8 +84279,7 @@ var Graph = /*#__PURE__*/function () {
       var _this2 = this;
 
       d3__WEBPACK_IMPORTED_MODULE_1__["json"]('https://unpkg.com/world-atlas@1.1.4/world/110m.json').then(function (data) {
-        _this2.countries = Object(topojson_client__WEBPACK_IMPORTED_MODULE_2__["feature"])(data, data.objects.countries);
-        console.log(_this2.countries);
+        _this2.countries = Object(topojson_client__WEBPACK_IMPORTED_MODULE_2__["feature"])(data, data.objects.countries); // console.log(this.countries);
 
         _this2.projection.fitExtent(_this2.extent, _this2.countries);
 
@@ -84321,18 +84348,65 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 
 
 var Routes = /*#__PURE__*/function () {
-  function Routes() {
+  function Routes(airports) {
     _classCallCheck(this, Routes);
 
     this.loader = pixi_js__WEBPACK_IMPORTED_MODULE_0__["Loader"].shared;
     var text = pako__WEBPACK_IMPORTED_MODULE_1__["ungzip"](this.loader.resources.routes.data, {
       to: 'string'
     });
-    this.list = d3__WEBPACK_IMPORTED_MODULE_2__["csvParse"](text);
-    console.log(this.list); // debugger
+    this.airports = airports;
+    this.avgFlightSpeedKph = 850;
+    this.routeTypeMap = {
+      domestic: 1,
+      international: 2,
+      intercontinental: 3
+    };
+    this.list = this.processRoutes(d3__WEBPACK_IMPORTED_MODULE_2__["csvParse"](text));
+    console.log(this.list);
   }
 
   _createClass(Routes, [{
+    key: "processRoutes",
+    value: function processRoutes(list) {
+      var _this = this;
+
+      console.log(this.airports);
+      return list.map(function (_ref, i) {
+        var distance = _ref.distance,
+            key = _ref.key,
+            from = _ref.from,
+            to = _ref.to;
+        var embark = _this.airports[from];
+        var disembark = _this.airports[to];
+        var coords = [embark.coords, disembark.coords];
+        var type = _this.routeTypeMap.domestic;
+
+        if (embark.country !== disembark.country) {
+          type = _this.routeTypeMap.international;
+        } // if (embark.continent !== disembark.continent) {
+        //   type = this.routeTypeMap.intercontinental;
+        // } else if (embark.country !== disembark.country) {
+        //   type = this.routeTypeMap.international;
+        // }
+
+
+        var dist = parseInt(distance, 10);
+        var time = dist / _this.avgFlightSpeedKph;
+        return {
+          id: key,
+          index: i,
+          time: time,
+          type: type,
+          coords: coords,
+          from: from,
+          to: to,
+          distance: dist // interpolate: d3.geoInterpolate(...coords),
+
+        };
+      });
+    }
+  }, {
     key: "draw",
     value: function draw(app, projection) {
       var graphics = new pixi_js__WEBPACK_IMPORTED_MODULE_0__["Graphics"]();

@@ -33,7 +33,7 @@ class Graph {
       .load(() => {
         this.draw();
         this.airports = new Airports();
-        this.routes = new Routes();
+        this.routes = new Routes(this.airports.list);
       });
   }
 
@@ -41,7 +41,7 @@ class Graph {
     d3.json('https://unpkg.com/world-atlas@1.1.4/world/110m.json')
       .then((data) => {
         this.countries = feature(data, data.objects.countries);
-        console.log(this.countries);
+        // console.log(this.countries);
 
 
         this.projection.fitExtent(this.extent, this.countries);

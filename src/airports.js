@@ -6,9 +6,22 @@ class Airports {
   constructor() {
     this.loader = PIXI.Loader.shared;
     const text = pako.ungzip(this.loader.resources.airports.data, { to: 'string' });
-    this.list = d3.csvParse(text);
-    console.log(this.list);
+    this.list = this.processAirports(d3.csvParse(text));
+    // console.log(this.list);
     // debugger
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  processAirports(list) {
+    return list.map(({
+      lat, lon, country, ...data
+    }, i) => ({
+      ...data,
+      index: i,
+      coords: [lat, lon].map(parseFloat),
+      country,
+      // continent:
+    }));
   }
 
   draw(app, projection) {
@@ -18,7 +31,7 @@ class Airports {
     const markerWidth = 4;
     // debugger;
     this.list.forEach((airport) => {
-      const p = projection([airport.lon, airport.lat]);
+      const p = projection([airport.coords[1], airport.coords[0]]);
       const x = p[0] - markerWidth / 2;
       const y = p[1] - markerWidth / 2;
       graphics.drawRect(x, y, markerWidth, markerWidth);
