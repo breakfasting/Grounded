@@ -84267,10 +84267,10 @@ var Graph = /*#__PURE__*/function () {
       this.loader.on('progress', function (loader) {
         console.log("".concat(loader.progress, "% loaded"));
       }).load(function () {
-        _this.draw();
-
         _this.airports = new _airports__WEBPACK_IMPORTED_MODULE_3__["default"]();
         _this.routes = new _routes__WEBPACK_IMPORTED_MODULE_4__["default"](_this.airports.list);
+
+        _this.draw();
       });
     }
   }, {
@@ -84294,6 +84294,8 @@ var Graph = /*#__PURE__*/function () {
         _this2.app.stage.addChild(_this2.graphics);
 
         _this2.airports.draw(_this2.app, _this2.projection);
+
+        _this2.routes.draw(_this2.app, _this2.projection);
       });
     }
   }]);
@@ -84401,25 +84403,26 @@ var Routes = /*#__PURE__*/function () {
           coords: coords,
           from: from,
           to: to,
-          distance: dist // interpolate: d3.geoInterpolate(...coords),
-
+          distance: dist,
+          interpolate: d3__WEBPACK_IMPORTED_MODULE_2__["geoInterpolate"].apply(d3__WEBPACK_IMPORTED_MODULE_2__, coords)
         };
       });
-    }
+    } // eslint-disable-next-line class-methods-use-this
+
   }, {
     key: "draw",
     value: function draw(app, projection) {
       var graphics = new pixi_js__WEBPACK_IMPORTED_MODULE_0__["Graphics"]();
-      graphics.lineStyle();
-      graphics.beginFill(0xA45341, 1);
-      var markerWidth = 4; // debugger;
+      var path = d3__WEBPACK_IMPORTED_MODULE_2__["geoPath"]().projection(projection).context(graphics);
+      var test1 = [25.325399398804, -80.274803161621];
+      var test2 = [40.081902, -75.010597]; // graphics.beginFill();
 
-      this.list.forEach(function (airport) {
-        var p = projection([airport.lon, airport.lat]);
-        var x = p[0] - markerWidth / 2;
-        var y = p[1] - markerWidth / 2;
-        graphics.drawRect(x, y, markerWidth, markerWidth);
-      });
+      graphics.lineStyle(1, 0xFF6666, 1);
+      path({
+        type: 'LineString',
+        coordinates: [[0.1278, 51.5074], [-74.0059, 40.7128]]
+      }); // graphics.endFill();
+
       app.stage.addChild(graphics);
     }
   }]);

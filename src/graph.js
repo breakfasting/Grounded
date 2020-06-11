@@ -31,9 +31,9 @@ class Graph {
       console.log(`${loader.progress}% loaded`);
     })
       .load(() => {
-        this.draw();
         this.airports = new Airports();
         this.routes = new Routes(this.airports.list);
+        this.draw();
       });
   }
 
@@ -53,6 +53,7 @@ class Graph {
 
         this.app.stage.addChild(this.graphics);
         this.airports.draw(this.app, this.projection);
+        this.routes.draw(this.app, this.projection);
       });
   }
 }

@@ -45,23 +45,26 @@ class Routes {
         from,
         to,
         distance: dist,
-        // interpolate: d3.geoInterpolate(...coords),
+        interpolate: d3.geoInterpolate(...coords),
       };
     });
   }
 
+  // eslint-disable-next-line class-methods-use-this
   draw(app, projection) {
     const graphics = new PIXI.Graphics();
-    graphics.lineStyle();
-    graphics.beginFill(0xA45341, 1);
-    const markerWidth = 4;
-    // debugger;
-    this.list.forEach((airport) => {
-      const p = projection([airport.lon, airport.lat]);
-      const x = p[0] - markerWidth / 2;
-      const y = p[1] - markerWidth / 2;
-      graphics.drawRect(x, y, markerWidth, markerWidth);
-    });
+    const path = d3.geoPath()
+      .projection(projection)
+      .context(graphics);
+
+    const test1 = [25.325399398804, -80.274803161621];
+    const test2 = [40.081902, -75.010597];
+
+    // graphics.beginFill();
+    graphics.lineStyle(1, 0xFF6666, 1);
+    path({type: 'LineString', coordinates: [[0.1278, 51.5074], [-74.0059, 40.7128]]});
+    // graphics.endFill();
+
     app.stage.addChild(graphics);
   }
 }
