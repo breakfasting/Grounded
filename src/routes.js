@@ -59,10 +59,12 @@ class Routes {
 
     const test1 = [25.325399398804, -80.274803161621];
     const test2 = [40.081902, -75.010597];
-
+    const sample = this.list;
+    sample.forEach((route) => {
+      graphics.lineStyle(1, 0xFF6666, 1);
+      path({ type: 'LineString', coordinates: route.coords });
+    });
     // graphics.beginFill();
-    graphics.lineStyle(1, 0xFF6666, 1);
-    path({type: 'LineString', coordinates: [[0.1278, 51.5074], [-74.0059, 40.7128]]});
     // graphics.endFill();
 
     app.stage.addChild(graphics);

@@ -18,7 +18,7 @@ class Airports {
     }, i) => ({
       ...data,
       index: i,
-      coords: [lat, lon].map(parseFloat),
+      coords: [lon, lat].map(parseFloat),
       country,
       // continent:
     }));
@@ -31,7 +31,7 @@ class Airports {
     const markerWidth = 4;
     // debugger;
     this.list.forEach((airport) => {
-      const p = projection([airport.coords[1], airport.coords[0]]);
+      const p = projection([airport.coords[0], airport.coords[1]]);
       const x = p[0] - markerWidth / 2;
       const y = p[1] - markerWidth / 2;
       graphics.drawRect(x, y, markerWidth, markerWidth);

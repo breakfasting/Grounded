@@ -84178,7 +84178,7 @@ var Airports = /*#__PURE__*/function () {
 
         return _objectSpread(_objectSpread({}, data), {}, {
           index: i,
-          coords: [lat, lon].map(parseFloat),
+          coords: [lon, lat].map(parseFloat),
           country: country // continent:
 
         });
@@ -84193,7 +84193,7 @@ var Airports = /*#__PURE__*/function () {
       var markerWidth = 4; // debugger;
 
       this.list.forEach(function (airport) {
-        var p = projection([airport.coords[1], airport.coords[0]]);
+        var p = projection([airport.coords[0], airport.coords[1]]);
         var x = p[0] - markerWidth / 2;
         var y = p[1] - markerWidth / 2;
         graphics.drawRect(x, y, markerWidth, markerWidth);
@@ -84415,13 +84415,16 @@ var Routes = /*#__PURE__*/function () {
       var graphics = new pixi_js__WEBPACK_IMPORTED_MODULE_0__["Graphics"]();
       var path = d3__WEBPACK_IMPORTED_MODULE_2__["geoPath"]().projection(projection).context(graphics);
       var test1 = [25.325399398804, -80.274803161621];
-      var test2 = [40.081902, -75.010597]; // graphics.beginFill();
-
-      graphics.lineStyle(1, 0xFF6666, 1);
-      path({
-        type: 'LineString',
-        coordinates: [[0.1278, 51.5074], [-74.0059, 40.7128]]
-      }); // graphics.endFill();
+      var test2 = [40.081902, -75.010597];
+      var sample = this.list;
+      sample.forEach(function (route) {
+        graphics.lineStyle(1, 0xFF6666, 1);
+        path({
+          type: 'LineString',
+          coordinates: route.coords
+        });
+      }); // graphics.beginFill();
+      // graphics.endFill();
 
       app.stage.addChild(graphics);
     }
