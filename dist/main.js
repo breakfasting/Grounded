@@ -84247,9 +84247,9 @@ var Graph = /*#__PURE__*/function () {
     });
     this.loader = pixi_js__WEBPACK_IMPORTED_MODULE_0__["Loader"].shared;
     this.extent = [[0, 0], [window.innerWidth, window.innerHeight]];
-    this.graphics = new pixi_js__WEBPACK_IMPORTED_MODULE_0__["Graphics"]();
-    this.projection = d3__WEBPACK_IMPORTED_MODULE_1__["geoNaturalEarth1"](); // this.projection = d3.geoOrthographic();
+    this.graphics = new pixi_js__WEBPACK_IMPORTED_MODULE_0__["Graphics"](); // this.projection = d3.geoNaturalEarth1();
 
+    this.projection = d3__WEBPACK_IMPORTED_MODULE_1__["geoOrthographic"]();
     this.pathGenerator = d3__WEBPACK_IMPORTED_MODULE_1__["geoPath"]().projection(this.projection).context(this.graphics);
   }
 
@@ -84293,9 +84293,8 @@ var Graph = /*#__PURE__*/function () {
 
         _this2.app.stage.addChild(_this2.graphics);
 
-        _this2.airports.draw(_this2.app, _this2.projection);
+        _this2.airports.draw(_this2.app, _this2.projection); // this.routes.draw(this.app, this.projection);
 
-        _this2.routes.draw(_this2.app, _this2.projection);
       });
     }
   }]);
