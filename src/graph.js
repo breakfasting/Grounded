@@ -5,6 +5,7 @@ import crossfilter from 'crossfilter2';
 import { feature } from 'topojson-client';
 import Airports from './airports';
 import Routes from './routes';
+import Flights from './flights';
 import timeSeriesChart from './timeSeriesChart';
 
 class Graph {
@@ -28,12 +29,12 @@ class Graph {
       .context(this.graphics);
 
     this.chartTimeline = timeSeriesChart()
-      .width(500)
+      .width(1500)
       .x((d) => d.key)
       .y((d) => d.value);
 
     this.chartTimeline.onBrushed((selected) => {
-      this.csData.dimTime.filter(selected);
+      this.flights.csData.dimTime.filter(selected);
       // console.log(this.csData.flightByRoute.all())
       this.draw();
     });
@@ -42,27 +43,25 @@ class Graph {
   load() {
     this.loader.add('airports', 'dist/assets/airports.csv.gz', { xhrType: 'arraybuffer' });
     this.loader.add('routes', 'dist/assets/routes.csv.gz', { xhrType: 'arraybuffer' });
-    this.loader.add('flights', 'dist/assets/flights_week_16.csv.gz', { xhrType: 'arraybuffer' });
+    // this.loader.add('flights', 'dist/assets/flights_week_16.csv.gz', { xhrType: 'arraybuffer' });
+    Flights.load(this.loader);
     this.loader.on('progress', (loader) => {
       console.log(`${loader.progress}% loaded`);
     })
       .load(() => {
         this.airports = new Airports();
         this.routes = new Routes(this.airports.list);
-        this.flights = pako.ungzip(this.loader.resources.flights.data, { to: 'string' });
+        // this.flights = pako.ungzip(this.loader.resources.flights1.data, { to: 'string' });
 
-        const flights = d3.csvParse(this.flights);
-        const mappedFlights = flights.map((ele) => ({
-          day: Math.floor(parseFloat(ele.disembark) / 24),
-          route: parseInt(ele.route, 10),
-        }));
+        // const flights = d3.csvParse(this.flights);
+        // const mappedFlights = flights.map((ele) => ({
+        //   day: Math.floor(parseFloat(ele.disembark) / 24),
+        //   route: parseInt(ele.route, 10),
+        // }));
 
-        this.csData = crossfilter(mappedFlights);
-        this.csData.dimTime = this.csData.dimension((d) => d.day);
-        this.csData.dimRoute = this.csData.dimension((d) => d.route);
-
-        this.csData.timesByHour = this.csData.dimTime.group();
-        this.csData.flightByRoute = this.csData.dimRoute.group();
+        // this.csData = crossfilter(mappedFlights);
+        this.flights = new Flights();
+        
 
         this.drawMap();
       });
@@ -83,9 +82,9 @@ class Graph {
 
         this.app.stage.addChild(this.graphics);
         this.airports.draw(this.app, this.projection);
-
+        this.flights.initFlights(this.loader);
         d3.select('#timeline')
-          .datum(this.csData.timesByHour.all())
+          .datum(this.flights.csData.timesByHour.all())
           .call(this.chartTimeline);
 
         this.app.stage.addChild(this.routes.graphics);
@@ -94,7 +93,7 @@ class Graph {
   }
 
   draw() {
-    this.routes.draw(this.app, this.projection, this.csData.flightByRoute.all());
+    this.routes.draw(this.app, this.projection, this.flights.csData.flightByRoute.all());
   }
 }
 

@@ -86324,6 +86324,80 @@ var Airports = /*#__PURE__*/function () {
 
 /***/ }),
 
+/***/ "./src/flights.js":
+/*!************************!*\
+  !*** ./src/flights.js ***!
+  \************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var pako__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! pako */ "./node_modules/pako/index.js");
+/* harmony import */ var pako__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(pako__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! d3 */ "./node_modules/d3/index.js");
+/* harmony import */ var crossfilter2__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! crossfilter2 */ "./node_modules/crossfilter2/main.js");
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+
+
+
+
+var Flights = /*#__PURE__*/function () {
+  function Flights() {
+    _classCallCheck(this, Flights);
+
+    this.csData = Object(crossfilter2__WEBPACK_IMPORTED_MODULE_2__["default"])();
+  }
+
+  _createClass(Flights, [{
+    key: "initFlights",
+    value: function initFlights(loader) {
+      for (var i = 1; i <= 18; i += 1) {
+        var rawData = pako__WEBPACK_IMPORTED_MODULE_0__["ungzip"](loader.resources["flights".concat(i)].data, {
+          to: 'string'
+        });
+        var data = d3__WEBPACK_IMPORTED_MODULE_1__["csvParse"](rawData, function (row) {
+          return {
+            day: Math.floor(parseFloat(row.disembark) / 24),
+            route: parseInt(row.route, 10)
+          };
+        });
+        this.csData.add(data);
+        console.log('added', i);
+      }
+
+      this.csData.dimTime = this.csData.dimension(function (d) {
+        return d.day;
+      });
+      this.csData.dimRoute = this.csData.dimension(function (d) {
+        return d.route;
+      });
+      this.csData.timesByHour = this.csData.dimTime.group();
+      this.csData.flightByRoute = this.csData.dimRoute.group();
+    }
+  }], [{
+    key: "load",
+    value: function load(loader) {
+      for (var i = 1; i <= 18; i += 1) {
+        loader.add("flights".concat(i), "dist/assets/flights_week_".concat(i, ".csv.gz"), {
+          xhrType: 'arraybuffer'
+        });
+      }
+    }
+  }]);
+
+  return Flights;
+}();
+
+/* harmony default export */ __webpack_exports__["default"] = (Flights);
+
+/***/ }),
+
 /***/ "./src/graph.js":
 /*!**********************!*\
   !*** ./src/graph.js ***!
@@ -86341,12 +86415,14 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var topojson_client__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! topojson-client */ "./node_modules/topojson-client/src/index.js");
 /* harmony import */ var _airports__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./airports */ "./src/airports.js");
 /* harmony import */ var _routes__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./routes */ "./src/routes.js");
-/* harmony import */ var _timeSeriesChart__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./timeSeriesChart */ "./src/timeSeriesChart.js");
+/* harmony import */ var _flights__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./flights */ "./src/flights.js");
+/* harmony import */ var _timeSeriesChart__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./timeSeriesChart */ "./src/timeSeriesChart.js");
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
 
 
 
@@ -86376,13 +86452,13 @@ var Graph = /*#__PURE__*/function () {
     this.projection = d3__WEBPACK_IMPORTED_MODULE_2__["geoNaturalEarth1"](); // this.projection = d3.geoOrthographic();
 
     this.pathGenerator = d3__WEBPACK_IMPORTED_MODULE_2__["geoPath"]().projection(this.projection).context(this.graphics);
-    this.chartTimeline = Object(_timeSeriesChart__WEBPACK_IMPORTED_MODULE_7__["default"])().width(500).x(function (d) {
+    this.chartTimeline = Object(_timeSeriesChart__WEBPACK_IMPORTED_MODULE_8__["default"])().width(1500).x(function (d) {
       return d.key;
     }).y(function (d) {
       return d.value;
     });
     this.chartTimeline.onBrushed(function (selected) {
-      _this.csData.dimTime.filter(selected); // console.log(this.csData.flightByRoute.all())
+      _this.flights.csData.dimTime.filter(selected); // console.log(this.csData.flightByRoute.all())
 
 
       _this.draw();
@@ -86399,34 +86475,22 @@ var Graph = /*#__PURE__*/function () {
       });
       this.loader.add('routes', 'dist/assets/routes.csv.gz', {
         xhrType: 'arraybuffer'
-      });
-      this.loader.add('flights', 'dist/assets/flights_week_16.csv.gz', {
-        xhrType: 'arraybuffer'
-      });
+      }); // this.loader.add('flights', 'dist/assets/flights_week_16.csv.gz', { xhrType: 'arraybuffer' });
+
+      _flights__WEBPACK_IMPORTED_MODULE_7__["default"].load(this.loader);
       this.loader.on('progress', function (loader) {
         console.log("".concat(loader.progress, "% loaded"));
       }).load(function () {
         _this2.airports = new _airports__WEBPACK_IMPORTED_MODULE_5__["default"]();
-        _this2.routes = new _routes__WEBPACK_IMPORTED_MODULE_6__["default"](_this2.airports.list);
-        _this2.flights = pako__WEBPACK_IMPORTED_MODULE_1__["ungzip"](_this2.loader.resources.flights.data, {
-          to: 'string'
-        });
-        var flights = d3__WEBPACK_IMPORTED_MODULE_2__["csvParse"](_this2.flights);
-        var mappedFlights = flights.map(function (ele) {
-          return {
-            day: Math.floor(parseFloat(ele.disembark) / 24),
-            route: parseInt(ele.route, 10)
-          };
-        });
-        _this2.csData = Object(crossfilter2__WEBPACK_IMPORTED_MODULE_3__["default"])(mappedFlights);
-        _this2.csData.dimTime = _this2.csData.dimension(function (d) {
-          return d.day;
-        });
-        _this2.csData.dimRoute = _this2.csData.dimension(function (d) {
-          return d.route;
-        });
-        _this2.csData.timesByHour = _this2.csData.dimTime.group();
-        _this2.csData.flightByRoute = _this2.csData.dimRoute.group();
+        _this2.routes = new _routes__WEBPACK_IMPORTED_MODULE_6__["default"](_this2.airports.list); // this.flights = pako.ungzip(this.loader.resources.flights1.data, { to: 'string' });
+        // const flights = d3.csvParse(this.flights);
+        // const mappedFlights = flights.map((ele) => ({
+        //   day: Math.floor(parseFloat(ele.disembark) / 24),
+        //   route: parseInt(ele.route, 10),
+        // }));
+        // this.csData = crossfilter(mappedFlights);
+
+        _this2.flights = new _flights__WEBPACK_IMPORTED_MODULE_7__["default"]();
 
         _this2.drawMap();
       });
@@ -86453,7 +86517,9 @@ var Graph = /*#__PURE__*/function () {
 
         _this3.airports.draw(_this3.app, _this3.projection);
 
-        d3__WEBPACK_IMPORTED_MODULE_2__["select"]('#timeline').datum(_this3.csData.timesByHour.all()).call(_this3.chartTimeline);
+        _this3.flights.initFlights(_this3.loader);
+
+        d3__WEBPACK_IMPORTED_MODULE_2__["select"]('#timeline').datum(_this3.flights.csData.timesByHour.all()).call(_this3.chartTimeline);
 
         _this3.app.stage.addChild(_this3.routes.graphics);
 
@@ -86463,7 +86529,7 @@ var Graph = /*#__PURE__*/function () {
   }, {
     key: "draw",
     value: function draw() {
-      this.routes.draw(this.app, this.projection, this.csData.flightByRoute.all());
+      this.routes.draw(this.app, this.projection, this.flights.csData.flightByRoute.all());
     }
   }]);
 
@@ -86632,7 +86698,7 @@ function timeSeriesChart() {
     bottom: 20,
     left: 20
   },
-      width = 760,
+      width = 1500,
       height = 120,
       xValue = function xValue(d) {
     return d[0];

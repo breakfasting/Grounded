@@ -3,7 +3,7 @@ import * as d3 from 'd3';
 /* global d3 */
 function timeSeriesChart() {
   var margin = { top: 20, right: 20, bottom: 20, left: 20 },
-    width = 760,
+    width = 1500,
     height = 120,
     xValue = function(d) {
       return d[0];
