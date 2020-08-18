@@ -14,6 +14,7 @@ class Routes {
       intercontinental: 3,
     };
     this.list = this.processRoutes(d3.csvParse(text));
+    this.graphics = new PIXI.Graphics();
     console.log(this.list);
   }
 
@@ -51,23 +52,30 @@ class Routes {
   }
 
   // eslint-disable-next-line class-methods-use-this
-  draw(app, projection) {
-    const graphics = new PIXI.Graphics();
+  draw(app, projection, flights) {
+    // console.log('drawing')
+    this.graphics.clear();
+    // const graphics = new PIXI.Graphics();
     const path = d3.geoPath()
       .projection(projection)
-      .context(graphics);
+      .context(this.graphics);
 
     const test1 = [25.325399398804, -80.274803161621];
     const test2 = [40.081902, -75.010597];
     const sample = this.list;
-    sample.forEach((route) => {
-      graphics.lineStyle(1, 0xFF6666, 1);
-      path({ type: 'LineString', coordinates: route.coords });
+
+    // sample.forEach((route) => {
+    //   path({ type: 'LineString', coordinates: route.coords });
+    // });
+
+    flights.forEach((flight) => {
+      this.graphics.lineStyle(3, 0xFF6666, Math.min(0.05 * flight.value, 1));
+      path({ type: 'LineString', coordinates: this.list[flight.key].coords });
     });
     // graphics.beginFill();
     // graphics.endFill();
 
-    app.stage.addChild(graphics);
+    // app.stage.addChild(this.graphics);
   }
 }
 
